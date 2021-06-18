@@ -48,3 +48,32 @@ exports.deleteSauce = (req, res, next) => {
     })
     .catch(error => res.status(500).json({ error }));
 };
+
+exports.likeSauce = (req, res, next) => { // Gestion des likes/dislikes d'une sauce //
+    const like = req.body.like;
+    if (like === 1) { // Like + 1, on modifie mongodb avec inc et push //
+        Sauce.updateOne({ _id: req.params.id }, { $inc: { likes: 1 }, $push: { usersLiked: req.body.userId }, _id: req.params.id })
+            .then(() => res.status(200).json({ message: 'Sauce appréciée !' }))
+            .catch(error => res.status(400).json({ error }))
+    } else if (like === -1) { // Dislike + 1 //
+        Sauce.updateOne({ _id: req.params.id }, { $inc: { dislikes: 1 }, $push: { usersDisliked: req.body.userId }, _id: req.params.id })
+            .then(() => res.status(200).json({ message: 'Sauce pas appréciée' }))
+            .catch(error => res.status(400).json({ error }))
+
+    } else {    // Annulation du Like ou Dislike //
+        Sauce.findOne({ _id: req.params.id })
+            .then(sauce => {
+                if (sauce.usersLiked.indexOf(req.body.userId) !== -1) {
+                    Sauce.updateOne({ _id: req.params.id }, { $inc: { likes: -1 }, $pull: { usersLiked: req.body.userId }, _id: req.params.id })
+                        .then(() => res.status(200).json({ message: 'Changement pris en compte !' }))
+                        .catch(error => res.status(400).json({ error }))
+                }
+                else if (sauce.usersDisliked.indexOf(req.body.userId) !== -1) {
+                    Sauce.updateOne({ _id: req.params.id }, { $inc: { dislikes: -1 }, $pull: { usersDisliked: req.body.userId }, _id: req.params.id })
+                        .then(() => res.status(200).json({ message: 'Changement pris en compte !' }))
+                        .catch(error => res.status(400).json({ error }))
+                }
+            })
+            .catch(error => res.status(400).json({ error }))
+    }
+};
