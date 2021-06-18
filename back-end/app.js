@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const app = express();
 const mongoose = require('mongoose');
 
+const userRoutes = require('./routes/user');
+
 //MongoDB Atlas connection
 mongoose.connect('mongodb+srv://new-user01:12345@cluster0.jw3cx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
   { useNewUrlParser: true,
@@ -21,14 +23,8 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.json());
 
-app.post('/api/auth/signup', (req, res) => {
-    console.log(req.body);
-    res.status(201).end('ok')
-    res.status(201).json({
-        message: "utilisateur inscrit"
-    });
-});
 
+app.use('/api/auth', userRoutes);
 
 
 
