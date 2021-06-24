@@ -1,6 +1,7 @@
 const fs = require('fs');
 const Sauce = require('../models/sauce');
 
+//Create a sauce
 exports.createSauce = (req, res, next) => {
     const sauceObject = JSON.parse(req.body.sauce);
     delete sauceObject._id;
@@ -13,18 +14,21 @@ exports.createSauce = (req, res, next) => {
     .catch((error) => res.status(400).json({ error }));
 };
 
+//Get a sauce
 exports.getOneSauce = (req, res, next) => {
     Sauce.findOne({ _id: req.params.id })
     .then(sauce => res.status(200).json(sauce))
     .catch(error => res.status(404).json({ error }))
 };
 
+//Get all the sauces
 exports.getAllSauces = (req, res, next) => {
     Sauce.find()
         .then(sauces => res.status(200).json(sauces))
         .catch(error => res.status(400).json({ error }));
 };
 
+//Modify a sauce
 exports.modifySauce = (req, res, next) => {
     const sauceObject = req.file ?
         {
@@ -36,6 +40,7 @@ exports.modifySauce = (req, res, next) => {
         .catch(error => res.status(400).json({ error }));
 };
 
+//Remove a sauce
 exports.deleteSauce = (req, res, next) => {
     Sauce.findOne({ _id: req.params.id })
     .then(sauce => {
@@ -49,18 +54,19 @@ exports.deleteSauce = (req, res, next) => {
     .catch(error => res.status(500).json({ error }));
 };
 
-exports.likeSauce = (req, res, next) => { // Gestion des likes/dislikes d'une sauce //
+//Likes or dislikes of a sauce
+exports.likeSauce = (req, res, next) => { 
     const like = req.body.like;
-    if (like === 1) { // Like + 1, on modifie mongodb avec inc et push //
+    if (like === 1) { 
         Sauce.updateOne({ _id: req.params.id }, { $inc: { likes: 1 }, $push: { usersLiked: req.body.userId }, _id: req.params.id })
             .then(() => res.status(200).json({ message: 'Sauce appréciée !' }))
             .catch(error => res.status(400).json({ error }))
-    } else if (like === -1) { // Dislike + 1 //
+    } else if (like === -1) { 
         Sauce.updateOne({ _id: req.params.id }, { $inc: { dislikes: 1 }, $push: { usersDisliked: req.body.userId }, _id: req.params.id })
             .then(() => res.status(200).json({ message: 'Sauce pas appréciée' }))
             .catch(error => res.status(400).json({ error }))
 
-    } else {    // Annulation du Like ou Dislike //
+    } else {    
         Sauce.findOne({ _id: req.params.id })
             .then(sauce => {
                 if (sauce.usersLiked.indexOf(req.body.userId) !== -1) {
